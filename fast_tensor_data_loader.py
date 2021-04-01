@@ -7,7 +7,7 @@ class FastTensorDataLoader:
     the dataset and calls cat (slow).
     Source: https://discuss.pytorch.org/t/dataloader-much-slower-than-manual-batching/27014/6
     """
-    def __init__(self, *tensors, batch_size=32, shuffle=False):
+    def __init__(self, *tensors, batch_size=32, shuffle=False, drop_last=False):
         """
         Initialize a FastTensorDataLoader.
 
@@ -15,6 +15,7 @@ class FastTensorDataLoader:
         :param batch_size: batch size to load.
         :param shuffle: if True, shuffle the data *in-place* whenever an
             iterator is created out of this object.
+        :param drop_last: if True, drop the last incompatible batch.
 
         :returns: A FastTensorDataLoader.
         """
@@ -24,12 +25,14 @@ class FastTensorDataLoader:
         self.dataset_len = self.tensors[0].shape[0]
         self.batch_size = batch_size
         self.shuffle = shuffle
+        self.drop_last = drop_last
 
         # Calculate # batches
         n_batches, remainder = divmod(self.dataset_len, self.batch_size)
-        if remainder > 0:
+        if not self.drop_last and remainder > 0:
             n_batches += 1
         self.n_batches = n_batches
+
     def __iter__(self):
         if self.shuffle:
             r = torch.randperm(self.dataset_len)
@@ -42,6 +45,8 @@ class FastTensorDataLoader:
             raise StopIteration
         batch = tuple(t[self.i:self.i+self.batch_size] for t in self.tensors)
         self.i += self.batch_size
+        if self.drop_last and self.i >= self.dataset_len:
+            raise StopIteration
         return batch
 
     def __len__(self):
