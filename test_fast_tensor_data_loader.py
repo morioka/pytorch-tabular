@@ -45,6 +45,22 @@ class TestFastTensorDataLoader(unittest.TestCase):
         self.assertEqual(True,  loader.drop_last)
         for i, j in loader:
             pass
+            # print(i)
+        self.assertNotEqual(99, i[-1])
+        self.assertEqual(98, i[-1])
+        self.assertEqual(loader.batch_size, len(i))
+
+    def test_batch_incompatible_droplast1(self):
+        loader = FastTensorDataLoader(self.x, self.y, batch_size=5, drop_last=True)
+        self.assertEqual(20,    loader.n_batches)
+        self.assertEqual(5,     loader.batch_size)
+        self.assertEqual(100,   loader.dataset_len)
+        self.assertEqual(False, loader.shuffle)
+        self.assertEqual(True,  loader.drop_last)
+        for i, j in loader:
+            pass
+            # print(i)
+        self.assertEqual(self.x[-1], i[-1])
         self.assertEqual(loader.batch_size, len(i))
 
     def test_batch_shuffle(self):
