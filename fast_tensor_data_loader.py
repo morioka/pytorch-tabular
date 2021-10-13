@@ -43,10 +43,10 @@ class FastTensorDataLoader:
     def __next__(self):
         if self.i >= self.dataset_len:
             raise StopIteration
+        if self.drop_last and self.i + self.batch_size > self.dataset_len:
+            raise StopIteration
         batch = tuple(t[self.i:self.i+self.batch_size] for t in self.tensors)
         self.i += self.batch_size
-        if self.drop_last and self.i > self.dataset_len:
-            raise StopIteration
         return batch
 
     def __len__(self):
